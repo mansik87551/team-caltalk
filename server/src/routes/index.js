@@ -16,6 +16,7 @@ const authRoutes = require('../modules/auth/auth.routes');
 const teamRoutes = require('../modules/team/team.routes');
 const scheduleRoutes = require('../modules/schedule/schedule.routes');
 const chatRoutes = require('../modules/chat/chat.routes');
+const scheduleRequestRoutes = require('../modules/schedule-request/schedule-request.routes');
 
 const router = express.Router();
 
@@ -25,6 +26,7 @@ router.use('/api/teams', teamRoutes);
 // 팀 하위 리소스(mergeParams 로 teamId 전달)
 router.use('/api/teams/:teamId/schedules', scheduleRoutes);
 router.use('/api/teams/:teamId/chat', chatRoutes);
+router.use('/api/teams/:teamId/schedule-change-requests', scheduleRequestRoutes);
 
 /**
  * GET /health — 라이브니스 + DB 레디니스.
