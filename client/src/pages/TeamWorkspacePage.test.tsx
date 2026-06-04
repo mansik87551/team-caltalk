@@ -1,7 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
+
+// 실시간 소켓은 단위 테스트에서 실제 연결하지 않는다(매핑은 socket.test.ts 에서 검증).
+vi.mock('../hooks/useSocket', () => ({ useSocket: () => {} }));
 import { server } from '../test/setup';
 import { renderWithProviders } from '../test/utils';
 import TeamWorkspacePage from './TeamWorkspacePage';
