@@ -26,6 +26,11 @@ function intOr(key, fallback) {
   return Number.isFinite(n) ? n : fallback;
 }
 
+function strOr(key, fallback) {
+  const raw = process.env[key];
+  return raw === undefined || raw === '' ? fallback : raw;
+}
+
 const config = {
   env: process.env.NODE_ENV || 'development',
   port: intOr('PORT', 3000),
@@ -35,6 +40,17 @@ const config = {
     idleTimeoutMillis: intOr('POSTGRES_POOL_IDLE_MS', 30000),
     connectionTimeoutMillis: intOr('POSTGRES_POOL_CONN_TIMEOUT_MS', 5000),
   },
+  // JWT: 시크릿은 보안 키이므로 필수(누락 시 부팅 실패, BE-01 DoD / docs/4 §7.2).
+  jwt: {
+    accessSecret: required('JWT_ACCESS_SECRET'),
+    accessTtl: strOr('JWT_ACCESS_TTL', '15m'),
+  },
+  // CORS 화이트리스트 — 쉼표 구분 오리진 목록. 미설정 시 로컬 개발 오리진만 허용(와일드카드 금지, docs/4 §5.2).
+  corsOrigins: strOr('CORS_ORIGIN', 'http://localhost:5173')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean),
+  logLevel: strOr('LOG_LEVEL', 'info'),
 };
 
 module.exports = config;
