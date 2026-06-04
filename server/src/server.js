@@ -12,14 +12,19 @@ const config = require('./config');
 const logger = require('./utils/logger');
 const { createApp } = require('./app');
 const { closePool } = require('./db/pool');
+const { attachSocketServer } = require('./sockets');
 
 const app = createApp();
 const server = app.listen(config.port, () => {
   logger.info({ port: config.port, env: config.env }, 'team-caltalk server 시작');
 });
 
+// WebSocket 게이트웨이 부착(팀 룸 + JWT 핸드셰이크, NFR-03)
+const io = attachSocketServer(server);
+
 async function shutdown(signal) {
   logger.info({ signal }, '종료 신호 수신 — graceful shutdown 시작');
+  io.close();
   server.close(async () => {
     try {
       await closePool();
