@@ -17,6 +17,8 @@ const EVENTS = Object.freeze({
   SCHEDULE_CHANGE_REQUESTED: 'ScheduleChangeRequested',
   SCHEDULE_CHANGE_APPLIED: 'ScheduleChangeApplied',
   SCHEDULE_CHANGE_REJECTED: 'ScheduleChangeRejected',
+  // 채팅 메시지 생성 — BE-08 WebSocket 게이트웨이가 구독해 team:<teamId> 룸으로 브로드캐스트(NFR-03)
+  CHAT_MESSAGE_CREATED: 'ChatMessageCreated',
 });
 
 // 구독자가 없을 때 'error' 외 이벤트는 조용히 무시되므로 안전하다. 리스너 상한은 넉넉히.
