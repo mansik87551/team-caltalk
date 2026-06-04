@@ -52,9 +52,38 @@ async function healthCheck() {
   return { ok: rows[0].ok === 1, timezone: rows[0].timezone };
 }
 
+/**
+ * 트랜잭션 실행 헬퍼. callback 에 트랜잭션 바운드 query 함수(exec)를 넘긴다.
+ * 성공 시 COMMIT, 예외 시 ROLLBACK 한다(원자성 보장, 예: 팀 생성+리더 멤버십 OI-2).
+ * exec 도 파라미터라이즈드 바인딩만 허용한다(Hard Rule).
+ * @template T
+ * @param {(exec: (text: string, params?: Array) => Promise<import('pg').QueryResult>) => Promise<T>} callback
+ * @returns {Promise<T>}
+ */
+async function withTransaction(callback) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const exec = (text, params = []) => {
+      if (!Array.isArray(params)) {
+        throw new TypeError('exec(text, params): params 는 배열이어야 합니다(문자열 연결 금지)');
+      }
+      return client.query(text, params);
+    };
+    const result = await callback(exec);
+    await client.query('COMMIT');
+    return result;
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
 /** graceful shutdown: 풀의 모든 커넥션을 정리한다. */
 async function closePool() {
   await pool.end();
 }
 
-module.exports = { pool, query, healthCheck, closePool };
+module.exports = { pool, query, withTransaction, healthCheck, closePool };
