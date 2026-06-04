@@ -77,8 +77,8 @@ async function create({ teamId, title, startAt, endAt, isAllDay, createdBy }) {
   return mapRow(rows[0]);
 }
 
-async function update(scheduleId, { title, startAt, endAt, isAllDay }) {
-  const { rows } = await query(
+async function update(scheduleId, { title, startAt, endAt, isAllDay }, exec = query) {
+  const { rows } = await exec(
     `UPDATE schedules
         SET title = $2, start_at = $3, end_at = $4, is_all_day = $5, updated_at = now()
       WHERE schedule_id = $1
