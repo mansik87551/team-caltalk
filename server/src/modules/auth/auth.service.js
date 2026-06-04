@@ -79,4 +79,17 @@ async function login({ email, password }) {
   return { token: signToken(user), user: toPublicUser(user) };
 }
 
-module.exports = { signup, login, verifyToken, signToken, toPublicUser };
+/**
+ * userId 로 현재 사용자 조회(GET /me). 없으면 401(토큰은 유효하나 사용자 부재).
+ * @param {string} userId
+ * @returns {Promise<object>} 공개 사용자 객체
+ */
+async function getById(userId) {
+  const user = await authRepository.findById(userId);
+  if (!user) {
+    throw new AppError(401, 'UNAUTHORIZED', '사용자를 찾을 수 없습니다');
+  }
+  return toPublicUser(user);
+}
+
+module.exports = { signup, login, getById, verifyToken, signToken, toPublicUser };

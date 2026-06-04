@@ -56,4 +56,19 @@ async function createUser({ email, displayName, passwordHash }) {
   return mapRow(rows[0]);
 }
 
-module.exports = { findByEmail, createUser, mapRow };
+/**
+ * userId 로 사용자를 조회한다(GET /me 용). 없으면 null.
+ * @param {string} userId
+ * @returns {Promise<object|null>}
+ */
+async function findById(userId) {
+  const { rows } = await query(
+    `SELECT user_id, email, display_name, password_hash, created_at, updated_at
+       FROM users
+      WHERE user_id = $1`,
+    [userId]
+  );
+  return mapRow(rows[0]);
+}
+
+module.exports = { findByEmail, findById, createUser, mapRow };

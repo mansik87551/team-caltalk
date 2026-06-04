@@ -10,11 +10,14 @@
 
 const express = require('express');
 const asyncHandler = require('../../utils/async-handler');
+const { authenticate } = require('../../middlewares/authenticate');
 const authController = require('./auth.controller');
 
 const router = express.Router();
 
 router.post('/signup', asyncHandler(authController.signup));
 router.post('/login', asyncHandler(authController.login));
+// 인증 필요: authenticate 통과 후에만 진입(BR-01)
+router.get('/me', authenticate, asyncHandler(authController.me));
 
 module.exports = router;
