@@ -12,8 +12,12 @@
 
 const express = require('express');
 const { healthCheck } = require('../db/pool');
+const authRoutes = require('../modules/auth/auth.routes');
 
 const router = express.Router();
+
+// 기능별 라우터 마운트
+router.use('/api/auth', authRoutes);
 
 /**
  * GET /health — 라이브니스 + DB 레디니스.
