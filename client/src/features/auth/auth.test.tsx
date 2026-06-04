@@ -41,7 +41,8 @@ describe('인증 화면 (FE-04 / UC-01 / SC-01)', () => {
     server.use(
       http.post(`${BASE}/api/auth/login`, () =>
         HttpResponse.json({ token: 'tok-1', user }, { status: 200 })
-      )
+      ),
+      http.get(`${BASE}/api/teams`, () => HttpResponse.json([]))
     );
     const u = userEvent.setup();
     renderWithProviders(<App />, '/login');
@@ -49,7 +50,8 @@ describe('인증 화면 (FE-04 / UC-01 / SC-01)', () => {
     await u.type(screen.getByLabelText('비밀번호'), 'P@ssw0rd!');
     await u.click(screen.getByRole('button', { name: '로그인' }));
 
-    expect(await screen.findByText(/캘린더 \+ 채팅/)).toBeInTheDocument();
+    // 워크스페이스 진입 신호: 헤더에 사용자명 노출.
+    expect(await screen.findByText('홍길동')).toBeInTheDocument();
     expect(useAuthStore.getState().isAuthenticated).toBe(true);
     expect(useAuthStore.getState().token).toBe('tok-1');
   });
@@ -77,7 +79,8 @@ describe('인증 화면 (FE-04 / UC-01 / SC-01)', () => {
     server.use(
       http.post(`${BASE}/api/auth/signup`, () =>
         HttpResponse.json({ token: 'tok-2', user }, { status: 201 })
-      )
+      ),
+      http.get(`${BASE}/api/teams`, () => HttpResponse.json([]))
     );
     const u = userEvent.setup();
     renderWithProviders(<App />, '/login');
@@ -87,7 +90,7 @@ describe('인증 화면 (FE-04 / UC-01 / SC-01)', () => {
     await u.type(screen.getByLabelText('비밀번호'), 'P@ssw0rd!');
     await u.click(screen.getByRole('button', { name: '회원가입' }));
 
-    expect(await screen.findByText(/캘린더 \+ 채팅/)).toBeInTheDocument();
+    expect(await screen.findByText('홍길동')).toBeInTheDocument();
     expect(useAuthStore.getState().token).toBe('tok-2');
   });
 
