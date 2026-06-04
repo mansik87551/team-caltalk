@@ -1,0 +1,48 @@
+# ─── Node.js / npm ───────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm/
+
+# ─── 환경 변수 / 시크릿 ───────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ─── 로그 / 임시 파일 ─────────────────────────────────────────
+logs/
+*.log
+*.tmp
+*.pid
+*.seed
+*.pid.lock
+coverage/
+.nyc_output/
+
+# ─── 빌드 산출물 ──────────────────────────────────────────────
+dist/
+build/
+out/
+.cache/
+
+# ─── 에디터 / IDE ─────────────────────────────────────────────
+.idea/
+*.swp
+*.swo
+*~
+
+# ─── OS 생성 파일 ─────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ─── Claude Code 로컬 설정(개인 설정만 제외) ──────────────────
+.claude/settings.local.json
+
+# ─── 참조용 외부 클론 리포지토리(자체 .git 보유) ─────────────
+awesome-claude-code-subagents/
