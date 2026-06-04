@@ -99,7 +99,12 @@ async function processRequest({ teamId, requestId, action, scheduleUpdate, rejec
       processedBy,
       rejectReason: rejectReason || null,
     });
-    publish(EVENTS.SCHEDULE_CHANGE_REJECTED, { requestId, teamId, rejectReason: rejectReason || null });
+    publish(EVENTS.SCHEDULE_CHANGE_REJECTED, {
+      requestId,
+      teamId,
+      requesterId: scr.requesterId,
+      rejectReason: rejectReason || null,
+    });
     return updated;
   }
 
@@ -131,7 +136,12 @@ async function processRequest({ teamId, requestId, action, scheduleUpdate, rejec
   });
 
   publish(EVENTS.SCHEDULE_UPDATED, { scheduleId: scr.scheduleId, teamId });
-  publish(EVENTS.SCHEDULE_CHANGE_APPLIED, { requestId, teamId, scheduleId: scr.scheduleId });
+  publish(EVENTS.SCHEDULE_CHANGE_APPLIED, {
+    requestId,
+    teamId,
+    scheduleId: scr.scheduleId,
+    requesterId: scr.requesterId,
+  });
 
   return updated;
 }

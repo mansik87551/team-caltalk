@@ -17,6 +17,9 @@ const teamRoutes = require('../modules/team/team.routes');
 const scheduleRoutes = require('../modules/schedule/schedule.routes');
 const chatRoutes = require('../modules/chat/chat.routes');
 const scheduleRequestRoutes = require('../modules/schedule-request/schedule-request.routes');
+const notificationRoutes = require('../modules/notification/notification.routes');
+// notification.service 를 require 하면 도메인 이벤트 구독이 활성화된다(BE-11).
+require('../modules/notification/notification.service');
 
 const router = express.Router();
 
@@ -27,6 +30,7 @@ router.use('/api/teams', teamRoutes);
 router.use('/api/teams/:teamId/schedules', scheduleRoutes);
 router.use('/api/teams/:teamId/chat', chatRoutes);
 router.use('/api/teams/:teamId/schedule-change-requests', scheduleRequestRoutes);
+router.use('/api/notifications', notificationRoutes);
 
 /**
  * GET /health — 라이브니스 + DB 레디니스.
