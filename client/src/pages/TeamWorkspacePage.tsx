@@ -4,6 +4,7 @@ import { WorkspaceLayout } from '../components/WorkspaceLayout';
 import { TeamSwitcher } from '../features/team/TeamSwitcher';
 import { useTeamsQuery } from '../features/team/useTeamsQuery';
 import { CalendarView } from '../features/calendar/CalendarView';
+import { ChatPanel } from '../features/chat/ChatPanel';
 import { ScheduleModal } from '../features/schedule/ScheduleModal';
 import { useAuth } from '../hooks/useAuth';
 import { useCurrentTeam } from '../hooks/useCurrentTeam';
@@ -86,7 +87,12 @@ export default function TeamWorkspacePage(): ReactElement {
     );
   }
 
-  const chatSlot = <p className="text-sm text-slate-500">채팅 / Daily Chat Log (FE-09 예정)</p>;
+  const chatSlot =
+    teams.length === 0 ? (
+      <p className="text-sm text-slate-500">팀에 참여하면 채팅을 사용할 수 있습니다.</p>
+    ) : (
+      <ChatPanel teamId={teamId} />
+    );
 
   return (
     <>
