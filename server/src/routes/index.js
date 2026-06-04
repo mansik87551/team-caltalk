@@ -14,12 +14,15 @@ const express = require('express');
 const { healthCheck } = require('../db/pool');
 const authRoutes = require('../modules/auth/auth.routes');
 const teamRoutes = require('../modules/team/team.routes');
+const scheduleRoutes = require('../modules/schedule/schedule.routes');
 
 const router = express.Router();
 
 // 기능별 라우터 마운트
 router.use('/api/auth', authRoutes);
 router.use('/api/teams', teamRoutes);
+// 일정은 팀 하위 리소스(mergeParams 로 teamId 전달)
+router.use('/api/teams/:teamId/schedules', scheduleRoutes);
 
 /**
  * GET /health — 라이브니스 + DB 레디니스.
