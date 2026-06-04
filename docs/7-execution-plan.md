@@ -21,12 +21,12 @@
 세 영역(DB 6 + BE 12 + FE 14 = **32 Task**)으로 분해했다. 영역별 마스터 체크리스트로 진척을 추적한다.
 
 ### 데이터베이스 (DB)
-- [ ] DB-01 로컬 PostgreSQL 환경 구성
-- [ ] DB-02 node-pg-migrate 셋업 + 초기 스키마 마이그레이션
-- [ ] DB-03 인덱스·FK 삭제정책 검증
-- [ ] DB-04 커넥션 풀(pg.Pool) 모듈 + 헬스체크
-- [ ] DB-05 시드 데이터 스크립트
-- [ ] DB-06 충돌 판정 조회(BR-07)·UTC 정합성 검증
+- [x] DB-01 로컬 PostgreSQL 환경 구성
+- [x] DB-02 node-pg-migrate 셋업 + 초기 스키마 마이그레이션
+- [x] DB-03 인덱스·FK 삭제정책 검증
+- [x] DB-04 커넥션 풀(pg.Pool) 모듈 + 헬스체크
+- [x] DB-05 시드 데이터 스크립트
+- [x] DB-06 충돌 판정 조회(BR-07)·UTC 정합성 검증
 
 ### 백엔드 (BE)
 - [ ] BE-01 프로젝트 셋업 & 공통 인프라
@@ -70,10 +70,10 @@
 - **의존성**: 없음
 - **규모**: S
 - **완료 조건 (DoD)**:
-  - [ ] `docker compose up -d`로 PostgreSQL 15/16 컨테이너 기동 + 헬스체크 통과
-  - [ ] `.env.example`에 `DATABASE_URL`·`POSTGRES_*`·`PORT` 키만 존재, `.env`는 `.gitignore` 포함
-  - [ ] `psql "$DATABASE_URL" -c "SELECT 1"` 성공
-  - [ ] `SHOW timezone;`가 `UTC` 반환
+  - [x] PostgreSQL 인스턴스 기동 + 연결(헬스체크) 통과 — Docker 미설치 환경이라 네이티브 **PostgreSQL 18.4** 사용, `team_caltalk` DB 생성
+  - [x] `.env.example`에 `DATABASE_URL`·`POSTGRES_*`·`PORT` 키만 존재, `.env`는 `.gitignore` 포함(`git check-ignore .env` 통과)
+  - [x] `SELECT 1` 성공(psql CLI 미설치 → postgresql-mcp로 동등 검증)
+  - [x] 타임존 `UTC` 반환(`ALTER DATABASE team_caltalk SET timezone TO 'UTC'` 적용 후 `current_setting('TimeZone')` = `UTC`)
 
 ### DB-02: node-pg-migrate 셋업 + 초기 스키마 마이그레이션
 - **목적**: 수동 DDL 금지(5.3)에 따라 `schema.sql`을 버전관리 마이그레이션으로 이관
@@ -81,11 +81,11 @@
 - **의존성**: [DB-01]
 - **규모**: M
 - **완료 조건 (DoD)**:
-  - [ ] `npm run migrate up` 무오류 적용 + `pgmigrations` 이력 기록
-  - [ ] `\dt`로 7개 테이블 생성 확인
-  - [ ] `pgcrypto` 확장 + 모든 PK `uuid DEFAULT gen_random_uuid()`
-  - [ ] CHECK(role/status/start<end), UNIQUE(email, (user_id,team_id)) 제약 존재(BR-06/09/10)
-  - [ ] `migrate down` 의존 역순 롤백 정상(멱등)
+  - [x] `npm run migrate:up` 무오류 적용 + `pgmigrations` 이력 기록(`1780531200000_initial-schema`)
+  - [x] 7개 테이블 생성 확인(users·teams·memberships·schedules·chat_messages·schedule_change_requests·notifications) + `daily_chat_log` 뷰
+  - [x] `pgcrypto` 확장 + 7개 PK 전부 `uuid DEFAULT gen_random_uuid()`
+  - [x] CHECK(chk_memberships_role / chk_scr_status / chk_schedules_time_valid: start<end), UNIQUE(uq_users_email, uq_memberships_user_team) 존재(BR-06/09/10)
+  - [x] `migrate:down` 의존 역순 롤백 정상(테이블 0개·이력 삭제) → `migrate:up` 재적용 복원 확인(멱등)
 
 ### DB-03: 인덱스·FK 삭제정책 검증
 - **목적**: NFR-02 복합 인덱스 10종 + ERD 5.1 ON DELETE 정책 반영·검증
@@ -93,9 +93,9 @@
 - **의존성**: [DB-02]
 - **규모**: S
 - **완료 조건 (DoD)**:
-  - [ ] `\di`로 ERD 4장 인덱스 전부 확인(ix_schedules_team_time 등)
-  - [ ] FK 정책 검증: 팀 삭제 시 CASCADE, created_by/sender_id/origin_message_id RESTRICT 차단
-  - [ ] `EXPLAIN`으로 충돌 조회가 `ix_schedules_team_time` 사용(seq scan 아님)
+  - [x] ERD 4장 인덱스 전부 확인(ix_schedules_team_time·ix_chat_messages_team_date·ix_scr_team_status 등 보조 인덱스 8종 + PK/UNIQUE) — 인덱스/FK는 DB-02 초기 마이그레이션에 정의됨, 본 단계는 검증
+  - [x] FK 정책 검증: 팀 삭제 시 CASCADE, created_by/sender_id/origin_message_id/requester_id/processed_by RESTRICT 차단(카탈로그 + 동작 검증: restrict_violation 23001 차단 / 팀 CASCADE 전파 실증)
+  - [x] `EXPLAIN`으로 충돌 조회가 `Index Scan using ix_schedules_team_time` 사용(Seq Scan 아님) 실증 — 산출물 `database/verify-indexes.sql` + 러너 `server/src/db/verify-indexes.js` (전체 PASS)
 
 ### DB-04: 커넥션 풀(pg.Pool) 모듈 + 헬스체크
 - **목적**: NFR-02 커넥션 풀링 + 파라미터라이즈드 쿼리 진입점 단일화
@@ -103,10 +103,10 @@
 - **의존성**: [DB-01] (DB-02와 병렬 가능)
 - **규모**: S
 - **완료 조건 (DoD)**:
-  - [ ] `pool.query('SELECT 1')` 성공, config에서 DATABASE_URL·pool size 주입(process.env 직접참조 금지)
-  - [ ] 쿼리 헬퍼가 `$1` 바인딩만 허용(문자열 연결 금지, Hard Rule)
-  - [ ] 세션 타임존 UTC 검증
-  - [ ] `pool.end()` graceful shutdown + 헬스 쿼리 함수 제공
+  - [x] `query('SELECT 1')` 성공, `config/index.js`에서 DATABASE_URL·pool size(max/idle/conn) 주입(pool.js는 process.env 직접 참조 안 함)
+  - [x] 쿼리 헬퍼 `query(text, params)`가 `$1` 바인딩만 허용 — 주입 안전 테스트로 검증(악성 문자열이 값으로만 취급), params 비배열 거부(Hard Rule)
+  - [x] 세션 타임존 UTC 검증(연결 옵션 `-c timezone=UTC`, 테스트에서 `current_setting('TimeZone')`=UTC)
+  - [x] `closePool()`(pool.end) graceful shutdown + `healthCheck()` 헬스 쿼리 함수 제공 — Vitest 5/5 통과(`server/src/db/pool.test.js`)
 
 ### DB-05: 시드 데이터 스크립트
 - **목적**: BR/AC 시나리오 재현용 일관 시드 제공
@@ -114,10 +114,10 @@
 - **의존성**: [DB-02, DB-04]
 - **규모**: M
 - **완료 조건 (DoD)**:
-  - [ ] 1팀 + 팀장1·팀원1 멤버십(role 각각, BR-10) 생성
-  - [ ] 충돌 검증용 일정: `10:00~11:00` + 경계 `11:00~12:00` + 종일 1건
-  - [ ] chat_message(target_date) 1건 + 이를 origin_message_id로 참조하는 requested SCR 1건
-  - [ ] 비밀번호 bcrypt 해시 저장, 재실행 멱등
+  - [x] 1팀(개발팀) + 팀장1·팀원1 멤버십(role: team_leader / team_member, BR-10) 생성
+  - [x] 충돌 검증용 일정: `10:00~11:00`(스프린트 회의) + 경계 `11:00~12:00`(코드 리뷰) + 종일 1건(`[00:00, 익일 00:00)` 정규화), 모두 UTC
+  - [x] chat_message(target_date=2026-06-10) 1건 + 이를 origin_message_id 로 참조하는 requested SCR 1건(연결 검증 통과)
+  - [x] 비밀번호 bcrypt(`$2b$`) 해시 저장, 고정 UUID + ON CONFLICT 로 재실행 멱등(행 수 불변)
 
 ### DB-06: 충돌 판정 조회(BR-07)·UTC 정합성 검증
 - **목적**: 충돌 쿼리가 AC-01/02/03에서 정확히 반환함을 SQL 레벨에서 고정
@@ -125,11 +125,11 @@
 - **의존성**: [DB-02, DB-04, DB-05]
 - **규모**: M
 - **완료 조건 (DoD)**:
-  - [ ] 충돌 쿼리 `(start_at < $end) AND ($start < end_at) AND team_id=$t AND schedule_id <> $self` → AC-01 충돌 1건
-  - [ ] AC-02 경계 접촉 0건(`<` 사용 검증)
-  - [ ] AC-03 자기 제외 0건
-  - [ ] 종일 일정 반열린 구간 정규화 검증
-  - [ ] timestamptz UTC 라운드트립(분 단위) 검증
+  - [x] 충돌 쿼리 `(start_at < $end) AND ($start < end_at) AND team_id=$t AND schedule_id <> $self` → AC-01 충돌 1건 (`database/queries/conflict-detection.sql`)
+  - [x] AC-02 경계 접촉 0건(엄격한 `<` 검증: 11:00~12:00 vs 10:00~11:00 = 0건)
+  - [x] AC-03 자기 제외 0건(동일 시간이어도 self 제외 시 0건)
+  - [x] 종일 일정 반열린 구간 `[00:00, 익일 00:00)` 정규화 검증(그날 일정과 충돌 / 익일 00:00 경계 비충돌)
+  - [x] timestamptz UTC 라운드트립(분 단위) 검증 — 산출물 `server/src/db/__tests__/conflict-query.test.js` (Vitest 7/7 통과, 팀 격리 BR-02 보너스 포함)
 
 ### DB 영역 의존성 요약
 | Task | 선행 |
