@@ -8,6 +8,7 @@ import { ChatPanel } from '../features/chat/ChatPanel';
 import { ScheduleModal } from '../features/schedule/ScheduleModal';
 import { useAuth } from '../hooks/useAuth';
 import { useCurrentTeam } from '../hooks/useCurrentTeam';
+import { useSocket } from '../hooks/useSocket';
 import type { Schedule } from '../api/types';
 
 type ModalState = { mode: 'create' } | { mode: 'edit'; schedule: Schedule } | null;
@@ -19,6 +20,9 @@ export default function TeamWorkspacePage(): ReactElement {
   const { data: teams = [], isLoading } = useTeamsQuery();
   const { teamId, role, isLeader, setCurrentTeam } = useCurrentTeam();
   const [modal, setModal] = useState<ModalState>(null);
+
+  // 실시간 수신 → Query 무효화(NFR-03). 인증되어 있으면 연결.
+  useSocket();
 
   // 최초 로드 시 현재 팀이 없으면 첫 팀을 선택(하위 영역 컨텍스트 연결).
   useEffect(() => {

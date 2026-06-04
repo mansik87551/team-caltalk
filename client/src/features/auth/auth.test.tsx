@@ -1,7 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
+
+// 로그인 후 진입하는 워크스페이스의 실시간 소켓은 테스트에서 실제 연결하지 않는다.
+vi.mock('../../hooks/useSocket', () => ({ useSocket: () => {} }));
 import { server } from '../../test/setup';
 import { renderWithProviders } from '../../test/utils';
 import App from '../../App';
