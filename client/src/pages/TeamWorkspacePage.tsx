@@ -8,6 +8,7 @@ import { ChatPanel } from '../features/chat/ChatPanel';
 import { ScheduleModal } from '../features/schedule/ScheduleModal';
 import { CreateChangeRequest } from '../features/schedule-request/CreateChangeRequest';
 import { RequestProcessPanel } from '../features/schedule-request/RequestProcessPanel';
+import { NotificationToasts } from '../features/notification/NotificationToasts';
 import { useAuth } from '../hooks/useAuth';
 import { useCurrentTeam } from '../hooks/useCurrentTeam';
 import { useSocket } from '../hooks/useSocket';
@@ -123,6 +124,7 @@ export default function TeamWorkspacePage(): ReactElement {
           onClose={() => setModal(null)}
         />
       )}
+      <NotificationToasts />
     </>
   );
 }

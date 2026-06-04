@@ -11,6 +11,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { scheduleFormSchema, type ScheduleFormValues } from './scheduleSchema';
 import { useScheduleMutations } from './useScheduleMutations';
 import { toUtcIso, formatInKst } from '../../lib/datetime';
+import { useNotificationStore } from '../../store/notificationStore';
 import type { ConflictInfo, Schedule } from '../../api/types';
 
 interface Props {
@@ -30,6 +31,7 @@ export function ScheduleModal({ teamId, schedule, onClose }: Props): ReactElemen
   const isEdit = Boolean(schedule);
   const { create, update, remove } = useScheduleMutations(teamId);
   const [conflicts, setConflicts] = useState<ConflictInfo[]>([]);
+  const addNotice = useNotificationStore((s) => s.add);
 
   const {
     register,
@@ -55,8 +57,12 @@ export function ScheduleModal({ teamId, schedule, onClose }: Props): ReactElemen
       isAllDay: values.isAllDay,
     };
     const handleResult = (res: { conflicts: ConflictInfo[] }) => {
-      if (res.conflicts.length > 0) setConflicts(res.conflicts);
-      else onClose();
+      if (res.conflicts.length > 0) {
+        setConflicts(res.conflicts);
+        addNotice('warning', `${res.conflicts.length}건의 일정 충돌이 있습니다(저장됨).`);
+      } else {
+        onClose();
+      }
     };
     if (isEdit && schedule) {
       update.mutate({ scheduleId: schedule.id, body }, { onSuccess: handleResult });
