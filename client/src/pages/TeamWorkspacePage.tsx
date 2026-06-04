@@ -9,6 +9,7 @@ import { ScheduleModal } from '../features/schedule/ScheduleModal';
 import { CreateChangeRequest } from '../features/schedule-request/CreateChangeRequest';
 import { RequestProcessPanel } from '../features/schedule-request/RequestProcessPanel';
 import { NotificationToasts } from '../features/notification/NotificationToasts';
+import { RoleGate } from '../features/auth/RoleGate';
 import { useAuth } from '../hooks/useAuth';
 import { useCurrentTeam } from '../hooks/useCurrentTeam';
 import { useSocket } from '../hooks/useSocket';
@@ -75,8 +76,8 @@ export default function TeamWorkspacePage(): ReactElement {
   } else {
     calendarSlot = (
       <div className="space-y-3">
-        {/* 일정 추가는 팀장만 노출(BR-03, UX 편의) */}
-        {isLeader && (
+        {/* 일정 추가는 팀장만 노출(BR-03, UX 편의). 권한 분기는 RoleGate 로 일원화. */}
+        <RoleGate allow="team_leader">
           <div className="flex justify-end">
             <button
               type="button"
@@ -86,7 +87,7 @@ export default function TeamWorkspacePage(): ReactElement {
               일정 추가
             </button>
           </div>
-        )}
+        </RoleGate>
         <CalendarView
           teamId={teamId}
           onSelectSchedule={(schedule) => {
