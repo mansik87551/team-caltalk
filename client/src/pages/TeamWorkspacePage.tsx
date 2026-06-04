@@ -6,12 +6,18 @@ import { useTeamsQuery } from '../features/team/useTeamsQuery';
 import { CalendarView } from '../features/calendar/CalendarView';
 import { ChatPanel } from '../features/chat/ChatPanel';
 import { ScheduleModal } from '../features/schedule/ScheduleModal';
+import { CreateChangeRequest } from '../features/schedule-request/CreateChangeRequest';
+import { RequestProcessPanel } from '../features/schedule-request/RequestProcessPanel';
 import { useAuth } from '../hooks/useAuth';
 import { useCurrentTeam } from '../hooks/useCurrentTeam';
 import { useSocket } from '../hooks/useSocket';
 import type { Schedule } from '../api/types';
 
-type ModalState = { mode: 'create' } | { mode: 'edit'; schedule: Schedule } | null;
+type ModalState =
+  | { mode: 'create' }
+  | { mode: 'edit'; schedule: Schedule }
+  | { mode: 'request'; schedule: Schedule }
+  | null;
 
 /** 캘린더+채팅 통합 화면(핵심, UC-06). 채팅은 FE-09 에서 채운다. */
 export default function TeamWorkspacePage(): ReactElement {
@@ -83,10 +89,12 @@ export default function TeamWorkspacePage(): ReactElement {
         <CalendarView
           teamId={teamId}
           onSelectSchedule={(schedule) => {
-            // 팀장만 수정 모달 진입(팀원은 열람만, BR-03)
-            if (isLeader) setModal({ mode: 'edit', schedule });
+            // 팀장: 수정 모달 / 팀원: 변경 요청 모달(BR-03/04)
+            setModal({ mode: isLeader ? 'edit' : 'request', schedule });
           }}
         />
+        {/* 변경 요청 목록·처리(팀장 처리, 팀원 열람) */}
+        {teamId && <RequestProcessPanel teamId={teamId} isLeader={isLeader} />}
       </div>
     );
   }
@@ -101,10 +109,17 @@ export default function TeamWorkspacePage(): ReactElement {
   return (
     <>
       <WorkspaceLayout header={header} calendar={calendarSlot} chat={chatSlot} />
-      {modal && teamId && (
+      {modal && teamId && (modal.mode === 'create' || modal.mode === 'edit') && (
         <ScheduleModal
           teamId={teamId}
           schedule={modal.mode === 'edit' ? modal.schedule : null}
+          onClose={() => setModal(null)}
+        />
+      )}
+      {modal && teamId && modal.mode === 'request' && (
+        <CreateChangeRequest
+          teamId={teamId}
+          schedule={modal.schedule}
           onClose={() => setModal(null)}
         />
       )}
