@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { WorkspaceLayout } from '../components/WorkspaceLayout';
 import { TeamSwitcher } from '../features/team/TeamSwitcher';
 import { useTeamsQuery } from '../features/team/useTeamsQuery';
+import { CalendarView } from '../features/calendar/CalendarView';
 import { useAuth } from '../hooks/useAuth';
 import { useCurrentTeam } from '../hooks/useCurrentTeam';
 
@@ -52,7 +53,7 @@ export default function TeamWorkspacePage(): ReactElement {
   ) : teams.length === 0 ? (
     <p className="text-sm text-slate-500">소속된 팀이 없습니다. 새 팀을 만들어 시작하세요.</p>
   ) : (
-    <p className="text-sm text-slate-500">캘린더 (FE-07 예정) — 현재 팀: {teamId}</p>
+    <CalendarView teamId={teamId} />
   );
 
   const chatSlot = <p className="text-sm text-slate-500">채팅 / Daily Chat Log (FE-09 예정)</p>;
