@@ -34,4 +34,10 @@ async function login(req, res) {
   res.status(200).json(result);
 }
 
-module.exports = { signup, login };
+// GET /me — authenticate 미들웨어가 주입한 req.user 기반으로 현재 사용자 반환.
+async function me(req, res) {
+  const user = await authService.getById(req.user.userId);
+  res.status(200).json(user);
+}
+
+module.exports = { signup, login, me };

@@ -18,13 +18,15 @@ class AppError extends Error {
    * @param {number} statusCode - HTTP 상태코드
    * @param {string} code - 머신리더블 에러 코드(예: 'VALIDATION_ERROR')
    * @param {string} message - 사람이 읽는 메시지
+   * @param {Array<object>} [details] - 필드 단위 검증 상세(400 응답에 포함, docs/4 §5.3)
    */
-  constructor(statusCode, code, message) {
+  constructor(statusCode, code, message, details) {
     super(message);
     this.name = 'AppError';
     this.statusCode = statusCode;
     this.code = code;
     this.isOperational = true;
+    if (details) this.details = details;
   }
 }
 
@@ -54,7 +56,11 @@ function notFoundHandler(req, res, next) {
  */
 // eslint-disable-next-line no-unused-vars
 function errorHandler(err, req, res, next) {
-  const isApp = err instanceof AppError;
+  // instanceof 외에 isOperational 덕타이핑도 인정한다.
+  // (테스트/모듈 경계에서 AppError 인스턴스가 중복 로딩되어도 표준 포맷을 유지하기 위함)
+  const isApp =
+    err instanceof AppError ||
+    (err && err.isOperational === true && typeof err.statusCode === 'number');
   const statusCode = isApp ? err.statusCode : 500;
   const code = isApp ? err.code : 'INTERNAL_ERROR';
   // 예상치 못한 500 에러는 내부 메시지를 노출하지 않는다.
@@ -66,7 +72,11 @@ function errorHandler(err, req, res, next) {
     logFn.call(req.log, { err, statusCode, code }, message);
   }
 
-  res.status(statusCode).json({ error: { code, message } });
+  const body = { error: { code, message } };
+  // 검증 상세(details)가 있으면 포함한다(400 VALIDATION_ERROR).
+  if (isApp && err.details) body.error.details = err.details;
+
+  res.status(statusCode).json(body);
 }
 
 module.exports = { AppError, notFoundHandler, errorHandler };
