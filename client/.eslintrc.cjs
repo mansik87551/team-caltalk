@@ -17,4 +17,11 @@ module.exports = {
     'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
   },
+  overrides: [
+    {
+      // 컴포넌트가 아닌 .ts 모듈(스토어/훅/유틸/api)에는 fast-refresh 규칙 미적용.
+      files: ['**/*.ts'],
+      rules: { 'react-refresh/only-export-components': 'off' },
+    },
+  ],
 };
