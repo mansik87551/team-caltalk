@@ -81,7 +81,7 @@ export function ScheduleModal({ teamId, schedule, onClose }: Props): ReactElemen
       aria-label={isEdit ? '일정 수정' : '일정 등록'}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4"
     >
-      <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+      <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-lg bg-white p-6 shadow-xl">
         <h2 className="text-lg font-semibold text-slate-800">{isEdit ? '일정 수정' : '일정 등록'}</h2>
 
         {serverError && (
