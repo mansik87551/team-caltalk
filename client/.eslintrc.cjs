@@ -23,5 +23,10 @@ module.exports = {
       files: ['**/*.ts'],
       rules: { 'react-refresh/only-export-components': 'off' },
     },
+    {
+      // 테스트·테스트 유틸(.tsx)은 컴포넌트 외 export 가 있어도 무방.
+      files: ['**/*.test.tsx', 'src/test/**'],
+      rules: { 'react-refresh/only-export-components': 'off' },
+    },
   ],
 };
