@@ -16,7 +16,8 @@ export function connectSocket(token: string): Socket {
   if (socket) return socket;
   socket = io(baseURL, {
     auth: { token },
-    transports: ['websocket'],
+    // websocket 우선, 실패 시 polling 으로 폴백(프록시·네트워크 환경에서 연결 안정성↑).
+    transports: ['websocket', 'polling'],
     // 끊김 시 자동 재연결(socket.io 기본). 재연결 시 핸드셰이크 재인증.
     reconnection: true,
   });
